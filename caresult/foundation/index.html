@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICAI Exam Results</title>
+    <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+    <div class="site-wrapper">
+        <div class="main-container">
+            <!-- Header (identical on both pages) -->
+            <div class="header-banner">
+                <img src="../../assets/logo.png" alt="ICAI Logo" class="header-logo">
+                <div class="header-text">
+                    <h1 class="header-title">The Institute of Chartered Accountants of India</h1>
+                    <p class="header-subtitle">Examination Results, May 2026</p>
+                </div>
+            </div>
+
+            <!-- LOGIN STATE SECTION -->
+            <div id="login-section" class="content-area">
+                <h2 class="page-subtitle">Foundation - Result</h2>
+                <p class="instruction-text">Enter your 6 Digit Roll Number to check your results</p>
+
+                <form id="result-form">
+                    <table class="form-table">
+                        <tr>
+                            <td class="form-label">Roll No.</td>
+                            <td class="form-input-cell">
+                                <input type="text" id="roll-no" name="roll" maxlength="6" pattern="\d{6}" required autocomplete="off">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="form-label">Registration No.</td>
+                            <td class="form-input-cell">
+                                <input type="text" id="reg-no" name="reg" maxlength="10" required autocomplete="off" style="text-transform: uppercase;">
+                            </td>
+                        </tr>
+                    </table>
+
+                    <p class="instruction-text" style="margin-top: 15px; margin-bottom: 8px;">Enter the text as shown in the below box</p>
+                    
+                    <div class="captcha-container">
+                        <canvas id="captcha-canvas" width="90" height="24" class="captcha-image-box" title="Click to refresh captcha"></canvas>
+                        <input type="text" id="captcha-input" class="captcha-input" maxlength="6" required autocomplete="off">
+                    </div>
+                    <div class="captcha-subtext">(For preventing automated submissions)</div>
+
+                    <!-- Error display area -->
+                    <div id="error-box" class="error-message hidden"></div>
+
+                    <div class="button-container">
+                        <button type="button" id="btn-clear" class="btn btn-clear">CLEAR</button>
+                        <button type="submit" id="btn-submit" class="btn btn-submit">SUBMIT</button>
+                    </div>
+                </form>
+
+                <a href="../../index.html" class="link-home">Home</a>
+            </div>
+
+            <!-- RESULT STATE SECTION (hidden by default) -->
+            <div id="results-section" class="content-area hidden">
+                <div class="page-subtitle-results">
+                    <span>Foundation Exam May 2026, Result</span>
+                    <span id="btn-logout" class="logout-link">Logout</span>
+                </div>
+
+                <table class="results-table">
+                    <tr>
+                        <th style="width: 50%;">ROLL NUMBER</th>
+                        <th style="width: 50%;" id="res-roll">611535</th>
+                    </tr>
+                    <tr>
+                        <td class="bold">Name</td>
+                        <td id="res-name">VISHWAJEET ANIL PATIL</td>
+                    </tr>
+                </table>
+
+                <table class="results-table" style="margin-top: 15px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">PAPER</th>
+                            <th style="width: 60%;">SUBJECT</th>
+                            <th style="width: 25%;" class="center">MARKS OBTAINED</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="bold">Paper 1</td>
+                            <td>Accounting</td>
+                            <td class="center" id="res-p1">053</td>
+                        </tr>
+                        <tr>
+                            <td class="bold">Paper 2</td>
+                            <td>Business Laws</td>
+                            <td class="center" id="res-p2">055</td>
+                        </tr>
+                        <tr>
+                            <td class="bold">Paper 3</td>
+                            <td>Quantitative Aptitude - Business Mathematics, Logical Reasoning, Statistics</td>
+                            <td class="center" id="res-p3">052</td>
+                        </tr>
+                        <tr>
+                            <td class="bold">Paper 4</td>
+                            <td>Business Economics</td>
+                            <td class="center" id="res-p4">060</td>
+                        </tr>
+                        <tr class="bold">
+                            <td colspan="2">Total</td>
+                            <td class="center" id="res-total">220</td>
+                        </tr>
+                        <tr class="result-status-row">
+                            <td colspan="3" id="res-status">Result: SUCCESSFUL</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="results-nav">
+                    <a id="link-another">Check Another Roll Number</a>
+                    <span>|</span>
+                    <a href="../../index.html">Home</a>
+                </div>
+            </div>
+
+            <!-- Footer / Disclaimer (identical on both pages) -->
+            <div class="disclaimer-container">
+                <div class="disclaimer-banner">Disclaimer</div>
+                <p class="disclaimer-text">
+                    Disclaimer: The result given is correct at the time of release of the result by the Institute which accepts no responsibility thereafter for errors or omissions caused as a result of their transmission via the Internet or their downloading or printing by the user. No material from this web site can be copied, reproduced, published, uploaded, posted, transmitted or distributed or dealt with in any manner, unless expressly authorized. Users are not permitted to change, modify or prepare derivative works from the content of this site. For any clarifications / confirmation please address your enquiries to Joint Secretary (Examinations), The Institute of Chartered Accountants of India, 'ICAI BHAWAN', Post Box No. 7112, Indraprastha Marg, New Delhi - 110 002
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // State variables
+        let currentCaptcha = '';
+
+        // DOM elements
+        const loginSection = document.getElementById('login-section');
+        const resultsSection = document.getElementById('results-section');
+        const resultForm = document.getElementById('result-form');
+        const errorBox = document.getElementById('error-box');
+        
+        const rollInput = document.getElementById('roll-no');
+        const regInput = document.getElementById('reg-no');
+        const captchaInput = document.getElementById('captcha-input');
+        const captchaCanvas = document.getElementById('captcha-canvas');
+        
+        const btnClear = document.getElementById('btn-clear');
+        const btnLogout = document.getElementById('btn-logout');
+        const linkAnother = document.getElementById('link-another');
+
+        // Results displays
+        const resRoll = document.getElementById('res-roll');
+        const resName = document.getElementById('res-name');
+        const resP1 = document.getElementById('res-p1');
+        const resP2 = document.getElementById('res-p2');
+        const resP3 = document.getElementById('res-p3');
+        const resP4 = document.getElementById('res-p4');
+        const resTotal = document.getElementById('res-total');
+        const resStatus = document.getElementById('res-status');
+
+        // Authentic Mock Database
+        const resultsDatabase = {
+            "611535": {
+                registrationNo: "WRO0855721",
+                name: "VISHWAJEET ANIL PATIL",
+                p1: "053",
+                p2: "055",
+                p3: "052",
+                p4: "060",
+                total: "220",
+                status: "SUCCESSFUL"
+            }
+        };
+
+        // Initialize Captcha
+        function generateCaptcha(forceCode = null) {
+            // If forceCode is provided, use it (for matching screenshots initial state)
+            currentCaptcha = forceCode || Math.random().toString(36).substring(2, 8);
+            
+            const ctx = captchaCanvas.getContext('2d');
+            ctx.clearRect(0, 0, captchaCanvas.width, captchaCanvas.height);
+            
+            // Draw background grid lines for authenticity
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for(let i = 0; i < captchaCanvas.width; i += 15) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, captchaCanvas.height);
+                ctx.stroke();
+            }
+            for(let j = 0; j < captchaCanvas.height; j += 8) {
+                ctx.beginPath();
+                ctx.moveTo(0, j);
+                ctx.lineTo(captchaCanvas.width, j);
+                ctx.stroke();
+            }
+
+            // Draw noise curves
+            ctx.strokeStyle = '#99d6ff';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(5, Math.random() * 15 + 5);
+            ctx.bezierCurveTo(30, Math.random() * 20, 60, Math.random() * 20, 85, Math.random() * 15 + 5);
+            ctx.stroke();
+
+            // Draw captcha code text
+            ctx.fillStyle = '#1c1cf2'; // Exact blue shade from captcha pixel check
+            ctx.font = 'bold italic 15px Georgia, serif';
+            ctx.textBaseline = 'middle';
+            
+            // Draw characters with slight rotation/vertical skew
+            const chars = currentCaptcha.split('');
+            let startX = 10;
+            chars.forEach((char, idx) => {
+                ctx.save();
+                // vertical skew or slight displacement
+                const yOff = Math.sin(idx) * 2 + 12;
+                ctx.translate(startX, yOff);
+                // random angle between -0.1 and 0.1 radians
+                const angle = (Math.sin(idx * 1.5) * 0.15);
+                ctx.rotate(angle);
+                ctx.fillText(char, 0, 0);
+                ctx.restore();
+                startX += 12.5;
+            });
+        }
+
+        // Validate Captcha
+        function validateCaptcha() {
+            return captchaInput.value.toLowerCase() === currentCaptcha.toLowerCase();
+        }
+
+        // Show result card
+        function displayResult(roll) {
+            const data = resultsDatabase[roll];
+            
+            resRoll.textContent = roll;
+            resName.textContent = data.name;
+            resP1.textContent = data.p1;
+            resP2.textContent = data.p2;
+            resP3.textContent = data.p3;
+            resP4.textContent = data.p4;
+            resTotal.textContent = data.total;
+            resStatus.textContent = "Result: " + data.status;
+
+            // Switch views
+            loginSection.classList.add('hidden');
+            resultsSection.classList.remove('hidden');
+        }
+
+        // Form Submit Handler
+        resultForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            errorBox.classList.add('hidden');
+
+            const roll = rollInput.value.trim();
+            const reg = regInput.value.trim().toUpperCase();
+
+            // 1. Verify captcha
+            if (!validateCaptcha()) {
+                errorBox.textContent = "Invalid Captcha. Please enter the correct text.";
+                errorBox.classList.remove('hidden');
+                generateCaptcha(); // regenerate on failure
+                captchaInput.value = '';
+                captchaInput.focus();
+                return;
+            }
+
+            // 2. Verify credentials against DB
+            const userRecord = resultsDatabase[roll];
+            if (userRecord && userRecord.registrationNo.toUpperCase() === reg) {
+                displayResult(roll);
+            } else {
+                errorBox.textContent = "The server is currently busy. Please try again after some time.";
+                errorBox.classList.remove('hidden');
+                generateCaptcha();
+                captchaInput.value = '';
+            }
+        });
+
+        // Clear Handler
+        btnClear.addEventListener('click', function() {
+            rollInput.value = '';
+            regInput.value = '';
+            captchaInput.value = '';
+            errorBox.classList.add('hidden');
+            generateCaptcha();
+        });
+
+        // Logout/Back handlers
+        function resetToLogin() {
+            resultsSection.classList.add('hidden');
+            loginSection.classList.remove('hidden');
+            rollInput.value = '';
+            regInput.value = '';
+            captchaInput.value = '';
+            errorBox.classList.add('hidden');
+            // Re-generate default captcha to match empty state
+            generateCaptcha('v2x65d');
+        }
+
+        btnLogout.addEventListener('click', resetToLogin);
+        linkAnother.addEventListener('click', resetToLogin);
+
+        // Click captcha canvas to refresh it
+        captchaCanvas.addEventListener('click', () => generateCaptcha());
+
+        // Initialize captcha with exact code 'v2x65d' to match screenshot state
+        window.addEventListener('load', () => {
+            generateCaptcha('v2x65d');
+        });
+    </script>
+</body>
+</html>
